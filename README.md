@@ -1,90 +1,71 @@
-Este repositorio es la base para el Trabajo Práctico de la materia **Desarrollo de Software (DDS)** de la carrera **Ingeniería en Sistemas de Información** de la **UTN FRBA**. Se trata de un **monorepo** que integra una aplicación frontend con Create React App y un backend con Express, facilitando el desarrollo y la gestión de ambos proyectos en un único entorno.
+# 🛒 Tienda Sol - E-commerce Marketplace
 
-## 📦 Estructura del Proyecto
+> **Plataforma de comercio electrónico Full Stack diseñada para conectar emprendedores locales con compradores, gestionando el ciclo completo de ventas, stock y notificaciones.**
 
-El monorepo está organizado de la siguiente manera:
+Este proyecto fue desarrollado como Trabajo Práctico Integrador para la materia **Desarrollo de Software** (UTN FRBA), simulando un entorno profesional con metodologías ágiles, control de versiones (GitFlow) y despliegue continuo (CI/CD).
 
-```
-.
-├── packages/
-│   ├── backend/        # Servidor Express.js
-│   └── frontend/       # Aplicación React (Create React App)
-├── package.json        # Configuración del monorepo (root)
-├── README.md           # Este archivo
-└── .env.example        # Ejemplo de configuración de variables de entorno
-```
+Documentación: [PDF DOCS](https://drive.google.com/file/d/1Dump6Qczm56wKiWscbf-qt_LchhuD9SH/view?usp=sharing)
 
-## ⚙️ Paquetes
+_Nota: Este repositorio es un mirror público del proyecto original desarrollado en el entorno privado de la Universidad (UTN FRBA). Se publica con fines demostrativos y de portafolio personal._
 
-Este monorepo utiliza **`npm workspaces`** para gestionar los diferentes paquetes.
+---
 
-### Backend (`packages/backend`)
+## 🚀 Stack MERN
 
-El backend está construido con Express.js y utiliza las siguientes dependencias:
+Stack moderno enfocado en escalabilidad, rendimiento y experiencia de usuario.
 
-- **`express`**: El framework web para Node.js, utilizado para construir la API.
-- **`cors`**: Middleware para Express que habilita Cross-Origin Resource Sharing (CORS), necesario para permitir que el frontend acceda al backend desde un origen diferente.
-- **`dotenv`**: Carga variables de entorno desde un archivo `.env` en `process.env`. Es crucial para configurar el puerto del servidor y los orígenes permitidos.
+### **Frontend**
+* **Framework:** [Next.js](https://nextjs.org/) (React) para SSR y optimización.
+* **UI/UX:** Material UI & Tailwind CSS para diseño responsive y accesible.
+* **State Management:** Context API para manejo global del Carrito de Compras.
+* **Cliente HTTP:** Axios.
 
-La idea es dar lo mínimo para levantar el servidor, y que durante el desarrollo del TP se vayan agregando las dependencias necesarias.
+### **Backend**
+* **Runtime:** Node.js + Express.
+* **Base de Datos:** MongoDB Atlas (NoSQL) con Mongoose para modelado de datos flexible.
+* **API:** RESTful API documentada con **Swagger/OpenAPI**.
+* **Seguridad:** Autenticación y gestión de sesiones mediante **Clerk**.
 
-### Frontend (`packages/frontend`)
+### **DevOps & QA**
+* **Testing:** Jest (Unit Testing) y Cypress (E2E Testing).
+* **Infraestructura:** Docker para contenedorización del Backend.
+* **CI/CD:** GitHub Actions para despliegue automático.
+* **Deploy:** Vercel (Frontend) y Render (Backend).
 
-El frontend es una aplicación de React generada con Create React App.
+---
 
-## 🚀 Inicio Rápido
+## 💡 Principales Funcionalidades
 
-Seguí estos pasos para poner en marcha el proyecto:
+El sistema soporta dos roles principales (**Comprador** y **Vendedor**) con flujos de trabajo diferenciados:
 
-### 1\. Instalación de Dependencias
+* 🛍️ **Gestión de Productos:** ABM completo de productos con control de stock en tiempo real, categorización y carga de imágenes.
+* 🔍 **Búsqueda Avanzada:** Filtros por categoría, rango de precios y ordenamiento (SQL/Mongo sort logic) con paginación optimizada.
+* 🛒 **Carrito & Checkout:** Lógica de carrito persistente (localStorage + Context) y validación de stock previa a la confirmación de compra.
+* 📦 **Gestión de Pedidos:** Ciclo de vida completo (Pendiente -> Confirmado -> Enviado -> Cancelado) con auditoría de estados.
+* 🔔 **Centro de Notificaciones:** Sistema de alertas para actualizaciones de pedidos (envíos, cancelaciones) y estado de lectura.
 
-Desde la raíz del monorepo, ejecutá:
+---
 
-```bash
-npm install
-```
+## 🏗️ Arquitectura y Flujo de Trabajo
 
-Esto instalará todas las dependencias para la raíz y para los paquetes `frontend` y `backend`.
+El proyecto utiliza una arquitectura de **Monorepo** para facilitar la gestión unificada del código.
 
-### 2\. Configuración de Variables de Entorno
+* **GitFlow:** Estrategia de ramas (`main`, `develop`, `feature/*`, `hotfix`) para asegurar la integridad del código en producción.
+* **API First:** Diseño robusto de endpoints REST con validaciones (Zod/Middleware) y manejo de errores estandarizado.
+* **Persistencia:** Modelado de datos documental (Schemas para Usuarios, Productos, Pedidos) optimizado para evitar joins complejos.
 
-Crea un archivo `.env` en el directorio `packages/backend`. Puedes usar el archivo `.env.example` como plantilla.
+---
 
-```
-# packages/backend/.env
-ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-SERVER_PORT=3001
-```
+## 🧪 Calidad de Software
 
-- **`ALLOWED_ORIGINS`**: Define los orígenes permitidos para las solicitudes CORS. Asegurate de incluir la URL donde se ejecuta tu frontend (por defecto, `http://localhost:3000` para Create React App). Cuando se haga el despliegue en nube acá se deberá incluir la URL donde se desplegó el frontend.
-- **`SERVER_PORT`**: El puerto en el que se ejecutará el servidor backend (ej. `8000`).
+* **Tests Unitarios:** Validación de lógica de negocio en la capa de servicios (ej: validación de stock).
+* **Tests E2E:** Simulación de flujo crítico de usuario: *Login Vendedor -> Crear Producto -> Compra de Usuario -> Validación de descuento de Stock*.
 
-### 3\. Ejecución de la Aplicación
+---
 
-Podés iniciar el frontend y el backend por separado o ambos a la vez:
-
-#### Ejecutar el Backend
-
-```bash
-npm run start:backend
-```
-
-Para el desarrollo con reinicio automático:
-
-```bash
-npm run dev:backend
-```
-
-#### Ejecutar el Frontend
-
-```bash
-npm run start:frontend
-```
-
-#### Ejecutar Ambos (Desarrollo)
-
-Para iniciar el backend en modo `dev` y el frontend simultáneamente, usá:
-
-```bash
-npm run start:dev
-```
+### 👥 Equipo - Grupo 6 (2C 2025)
+* Alex Fiorenza
+* Ian Gabriel Sanna
+* Facundo Tomasetti
+* Ignacio Alejo Scarfo
+* Ignacio Castro Planas
