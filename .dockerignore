@@ -1,0 +1,53 @@
+# Node modules (excepto los que se instalan en el build)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Frontend (no necesario para el backend)
+packages/frontend
+
+# Testing
+coverage
+test
+*.test.js
+*.spec.js
+jest.config.js
+babel.config.cjs
+
+# Documentation
+docs
+*.md
+README.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Temporary files
+tmp
+temp
+
+# Build artifacts
+dist
+build

@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Define CSS layers order - MUI styles will be in 'mui' layer, allowing Tailwind utilities to override */
+@layer mui, tailwind;
+
+:root {
+  /* Custom color palette */
+  --black: #000000;
+  --oxford-blue: #14213d;
+  --orange-web: #fca311;
+  --platinum: #e5e5e5;
+  --white: #ffffff;
+
+  /* Default background and foreground */
+  --background: var(--platinum);
+  --foreground: var(--black);
+}
+
+@theme inline {
+  /* Custom color palette for Tailwind */
+  --color-black: #000000;
+  --color-oxford-blue: #14213d;
+  --color-orange: #fca311;
+  --color-platinum: #e5e5e5;
+  --color-white: #ffffff;
+
+  /* Primary and secondary colors */
+  --color-primary: var(--color-oxford-blue);
+  --color-secondary: var(--color-orange);
+
+  /* Background and foreground */
+  --color-background: var(--color-platinum);
+  --color-foreground: var(--color-black);
+
+  /* Font families */
+  --font-sans: var(--font-poppins);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins, Arial, Helvetica, sans-serif);
+}

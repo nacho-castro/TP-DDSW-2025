@@ -1,0 +1,692 @@
+openapi: 3.0.3
+info:
+  title: API de Tienda Sol
+  version: 1.0.2
+  description: API para gestión de pedidos, productos y notificaciones
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor local
+
+tags:
+  - name: Pedidos
+    description: Endpoints para gestión de pedidos
+  - name: Productos
+    description: Endpoints para gestión de productos
+  - name: Notificaciones
+    description: Endpoints para gestión de notificaciones
+  - name: Usuarios
+    description: Endpoints para gestión de colecciones de usuarios
+
+paths:
+  ############################
+  # PEDIDOS
+  ############################
+  /pedidos:
+    post:
+      summary: Crear un pedido
+      tags: [Pedidos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedidoCrear'
+      responses:
+        '201':
+          description: Pedido creado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  pedidoId: { type: string }
+
+    get:
+      summary: Obtener todos los pedidos
+      tags: [Pedidos]
+      responses:
+        '200':
+          description: Lista de pedidos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pedido'
+
+  /pedidos/{pedidoId}:
+    delete:
+      summary: Cancelar un pedido
+      tags: [Pedidos]
+      parameters:
+        - in: path
+          name: pedidoId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                compradorId:
+                  type: string
+      responses:
+        '200':
+          description: Pedido cancelado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  pedido:
+                    $ref: '#/components/schemas/Pedido'
+        '400':
+          description: Error de negocio
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+
+  /pedidos/{pedidoId}/enviado:
+    patch:
+      summary: Marcar pedido como enviado
+      tags: [Pedidos]
+      parameters:
+        - in: path
+          name: pedidoId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vendedorId:
+                  type: string
+      responses:
+        '200':
+          description: Pedido marcado como enviado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  pedido:
+                    $ref: '#/components/schemas/Pedido'
+        '400':
+          description: "No se puede enviar el pedido (ej: cancelado)"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+
+  ############################
+  # USUARIOS
+  ############################
+  /usuarios/vendedor/{vendedorId}/productos:
+    get:
+      summary: Listar productos de un usuario vendedor con filtros, paginación y rango de precios
+      tags: [Usuarios, Productos]
+      parameters:
+      - in: path
+        name: vendedorId
+        required: true
+        schema: { type: string }
+        description: ID del vendedor (debe existir en la base de datos).
+      - in: query
+        name: page
+        schema: { type: integer, minimum: 1, default: 1 }
+        description: Número de página a recuperar.
+      - in: query
+        name: limit
+        schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+        description: Cantidad de productos por página.
+      - in: query
+        name: nombre
+        schema: { type: string }
+        description: Filtro por coincidencia parcial en el título del producto.
+      - in: query
+        name: descripcion
+        schema: { type: string }
+        description: Filtro por coincidencia parcial en la descripción del producto.
+      - in: query
+        name: categoria
+        schema: { type: string }
+        description: Filtra productos que pertenezcan a una categoría específica (ID de categoría).
+      - in: query
+        name: precioMin
+        schema: { type: number }
+        description: Precio mínimo del rango a filtrar.
+      - in: query
+        name: precioMax
+        schema: { type: number }
+        description: Precio máximo del rango a filtrar.
+      responses:
+        '200':
+          description: Lista de productos filtrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pagina: { type: integer }
+                  perPage: { type: integer }
+                  total: { type: integer }
+                  totalPaginas: { type: integer }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ProductoRespuesta' }
+
+  /usuarios/comprador/{compradorId}/pedidos:
+    get:
+      summary: Obtener pedidos de un usuario comprador
+      tags: [Usuarios, Pedidos]
+      parameters:
+        - in: path
+          name: usuarioId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de pedidos del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PedidoResumido'
+
+  /usuarios/{usuarioId}/notificaciones/unread:
+    get:
+      summary: Obtener notificaciones sin leer
+      tags: [Usuarios, Notificaciones]
+      parameters:
+        - in: path
+          name: usuarioId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: Lista paginada de notificaciones sin leer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pagina: { type: integer }
+                  perPage: { type: integer }
+                  totalColecciones: { type: integer }
+                  totalPaginas: { type: integer }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Notificacion' }
+
+  /usuarios/{usuarioId}/notificaciones/read:
+    get:
+      summary: Obtener notificaciones leídas
+      tags: [Usuarios, Notificaciones]
+      parameters:
+        - in: path
+          name: usuarioId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: Lista paginada de notificaciones leídas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pagina: { type: integer }
+                  perPage: { type: integer }
+                  totalColecciones: { type: integer }
+                  totalPaginas: { type: integer }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Notificacion' }
+
+  ############################
+  # PRODUCTOS
+  ############################
+  /productos:
+    post:
+      summary: Crear un producto
+      tags: [Productos]
+      description: Crea un nuevo producto asociado a un vendedor. Retorna el producto creado con información adicional como timestamps y ID generado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductoCrear' }
+      responses:
+        '201':
+          description: Producto creado con éxito
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductoRespuesta' }
+
+    get:
+      summary: Listar todos los productos con filtros, paginación y ordenamiento
+      tags: [Productos]
+      parameters:
+      - in: query
+        name: page
+        schema: { type: integer, minimum: 1, default: 1 }
+        description: Número de página a recuperar.
+      - in: query
+        name: limit
+        schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+        description: Cantidad de productos por página.
+      - in: query
+        name: sortParam
+        schema:
+          type: string
+          enum: [precio_asc, precio_desc, mas_vendidos]
+        description: Criterio de ordenamiento (`precio_asc`, `precio_desc`, `mas_vendidos`).
+      - in: query
+        name: nombre
+        schema: { type: string }
+        description: Filtro por coincidencia parcial en el título del producto.
+      - in: query
+        name: descripcion
+        schema: { type: string }
+        description: Filtro por coincidencia parcial en la descripción del producto.
+      - in: query
+        name: categoria
+        schema: { type: string }
+        description: Filtra productos que pertenezcan a una categoría específica (ID de categoría).
+      - in: query
+        name: precioMin
+        schema: { type: number }
+        description: Precio mínimo del rango a filtrar.
+      - in: query
+        name: precioMax
+        schema: { type: number }
+        description: Precio máximo del rango a filtrar.
+      responses:
+      '200':
+        description: Lista paginada de productos con filtros aplicados.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pagina: { type: integer, example: 1 }
+                perPage: { type: integer, example: 10 }
+                totalColecciones: { type: integer, example: 250 }
+                totalPaginas: { type: integer, example: 25 }
+                data:
+                  type: array
+                  items: { $ref: '#/components/schemas/ProductoRespuesta' }
+
+  /productos/{id}:
+    put:
+      summary: Actualizar un producto existente
+      tags: [Productos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductoCrear'
+      responses:
+        '200':
+          description: Producto actualizado correctamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductoRespuesta' }
+        '404':
+          description: Producto no encontrado
+        '500':
+          description: Error del servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+
+    delete:
+      summary: Eliminar producto
+      tags: [Productos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Producto eliminado correctamente
+        '404':
+          description: Producto no encontrado
+
+  /productos/categorias:
+    get:
+      summary: Obtener todas las categorías de productos
+      tags: [Productos]
+      description: Devuelve una lista de todas las categorías disponibles, mostrando su identificador y nombre.
+      responses:
+        '200':
+          description: Lista de categorías disponibles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Categoria'
+        '404':
+          description: No se encontraron categorías
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No se encontraron categorías"
+
+  ############################
+  # NOTIFICACIONES
+  ############################
+  /notificaciones/{id}/read:
+    patch:
+      summary: Marcar notificación como leída
+      tags: [Notificaciones]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Notificación marcada como leída
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  notificacion:
+                    $ref: '#/components/schemas/Notificacion'
+        '400':
+          description: Error en la solicitud
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+
+components:
+  schemas:
+    Usuario:
+      type: object
+      properties:
+        id: { type: string }
+        nombre: { type: string }
+        email: { type: string }
+        telefono: { type: string }
+
+    Producto:
+      type: object
+      properties:
+        id: { type: string }
+        vendedor: { $ref: '#/components/schemas/Usuario' }
+        titulo: { type: string }
+        descripcion: { type: string }
+        categorias:
+          type: array
+          items: { type: string }
+        precio: { type: number }
+        moneda: { type: string }
+        stock: { type: integer }
+        fotos:
+          type: array
+          items: { type: string }
+        activo: { type: boolean }
+
+    ProductoCrear:
+      type: object
+      required: [usuarioId, titulo, precio, moneda]
+      properties:
+        usuarioId:
+          type: string
+          description: ID del vendedor (debe existir en la base de datos)
+          example: "68d960c7014ba92b044c874f"
+        titulo:
+          type: string
+          description: Nombre del producto
+          minLength: 1
+          example: "Zapatillas Jordan"
+        descripcion:
+          type: string
+          description: Descripción detallada del producto
+          example: "Zapatillas Talle 36 Basquet"
+        categorias:
+          type: array
+          description: Lista de IDs de categorías
+          items:
+            type: string
+          example: ["68dc02b16f95d83ac13f3fc8", "68dc02b16f95d83ac13f3fc9"]
+        precio:
+          type: number
+          description: Precio del producto
+          minimum: 0
+          example: 850
+        moneda:
+          type: string
+          description: Tipo de moneda
+          enum: [PESO_ARG, USD, EUR]
+          example: "PESO_ARG"
+        stock:
+          type: integer
+          description: Cantidad disponible en inventario
+          minimum: 0
+          example: 25
+        fotos:
+          type: array
+          description: URLs de las fotos del producto
+          items:
+            type: string
+            format: uri
+          example:
+            - "https://ejemplo.com/foto1.jpg"
+            - "https://ejemplo.com/foto2.jpg"
+        activo:
+          type: boolean
+          description: Estado de visibilidad del producto
+          default: true
+          example: true
+
+    ProductoRespuesta:
+      type: object
+      description: Producto creado con metadatos del servidor
+      properties:
+        _id:
+          type: string
+          description: ID único generado por MongoDB
+          example: "68e3c4c50bffb03e418bca9c"
+        vendedor:
+          type: string
+          description: ID del vendedor (se mapea desde usuarioId)
+          example: "68d960c7014ba92b044c874f"
+        titulo:
+          type: string
+          example: "Zapatillas Jordan"
+        descripcion:
+          type: string
+          example: "Zapatillas Talle 36 Basquet"
+        categorias:
+          type: array
+          items:
+            type: string
+          example: ["68dc02b16f95d83ac13f3fc9"]
+        precio:
+          type: number
+          example: 820
+        moneda:
+          type: string
+          example: "PESO_ARG"
+        stock:
+          type: integer
+          example: 25
+        totalVendido:
+          type: integer
+          description: Contador de unidades vendidas (inicializa en 0)
+          example: 0
+        fotos:
+          type: array
+          items:
+            type: string
+          example:
+            - "https://ejemplo.com/foto1.jpg"
+            - "https://ejemplo.com/foto2.jpg"
+        activo:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación
+          example: "2025-10-06T13:31:49.334Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de última actualización
+          example: "2025-10-06T13:31:49.334Z"
+
+    Categoria:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID único de la categoría
+          example: "6737c8d4215f5b1b58a9a001"
+        nombre:
+          type: string
+          description: Nombre descriptivo de la categoría
+          example: "Electrodomésticos"
+
+
+    ItemPedido:
+      type: object
+      properties:
+        productoId: { type: string }
+        cantidad: { type: integer }
+        precioUnitario: { type: number }
+
+    DireccionEntrega:
+      type: object
+      properties:
+        calle: { type: string }
+        altura: { type: integer }
+        piso: { type: string }
+        departamento: { type: string }
+        codPostal: { type: string }
+        ciudad: { type: string }
+        provincia: { type: string }
+        pais: { type: string }
+        lat: { type: number }
+        lon: { type: number }
+
+    HistorialEstado:
+      type: object
+      properties:
+        fecha: { type: string, format: date-time }
+        estado: 
+          type: string
+          enum: [PENDIENTE, CONFIRMADO, EN_PREPARACION, ENVIADO, ENTREGADO, CANCELADO]
+        quien: { type: string }
+        motivo: { type: string }
+
+    Pedido:
+      type: object
+      properties:
+        id: { type: string }
+        compradorId: { type: string }
+        estado: 
+          type: string
+          enum: [PENDIENTE, CONFIRMADO, EN_PREPARACION, ENVIADO, ENTREGADO, CANCELADO]
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ItemPedido' }
+        moneda: { type: string }
+        direccionEntrega: { $ref: '#/components/schemas/DireccionEntrega' }
+        historialEstados:
+          type: array
+          items: { $ref: '#/components/schemas/HistorialEstado' }
+        fechaCreacion: { type: string, format: date-time }
+        total: { type: number }
+
+    PedidoResumido:
+      type: object
+      properties:
+        id: { type: string }
+        compradorId: { type: string }
+        estado: 
+          type: string
+          enum: [PENDIENTE, CONFIRMADO, EN_PREPARACION, ENVIADO, ENTREGADO, CANCELADO]
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              productoId: { type: string }
+              cantidad: { type: integer }
+              precioUnitario: { type: number }
+
+    PedidoCrear:
+      type: object
+      required: [compradorId, items, moneda, direccionEntrega]
+      properties:
+        compradorId: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ItemPedido' }
+        moneda: { type: string }
+        direccionEntrega: { $ref: '#/components/schemas/DireccionEntrega' }
+
+    Notificacion:
+      type: object
+      properties:
+        id: { type: string }
+        usuarioId: { type: string }
+        titulo: { type: string }
+        mensaje: { type: string }
+        tipo: { type: string, enum: [pedido, producto, envio, sistema] }
+        leida: { type: boolean }
+        fechaCreacion: { type: string, format: date-time }
+        fechaLectura: { type: string, format: date-time, nullable: true }
